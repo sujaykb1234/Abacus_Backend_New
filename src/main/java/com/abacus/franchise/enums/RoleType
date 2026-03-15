@@ -1,0 +1,6 @@
+public enum RoleType {
+    ROLE_STUDENT,
+    ROLE_FRANCHISE,
+    ROLE_MASTER_FRANCHISE,
+    ROLE_ADMIN
+}
