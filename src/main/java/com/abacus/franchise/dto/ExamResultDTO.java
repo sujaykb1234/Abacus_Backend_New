@@ -1,4 +1,4 @@
-package com.abacus.franchise.serviceImpl;
+package com.abacus.franchise.dto;
 
 import lombok.Value;
 
