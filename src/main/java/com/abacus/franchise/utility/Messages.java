@@ -43,25 +43,25 @@ public final class Messages {
 	public static final String mobileAlreadyExist = "MOBILE NUMBER ALREADY EXISTS";
 
 	public static final String emailAlreadyExist = "EMAIL ALREADY EXISTS";
-	
+
 	public static final String productFound = "PRODUCT FOUND SUCCESSFULLY";
-	
+
 	public static final String productNotFound = " PRODUCT NOT FOUND";
 
 	public static final String passwordRequired = "PASSWORD IS REQUIRED";
-	
+
 	public static final String sendProductOrder = "SEND PRODUCT ORDER SUCCESSFULLY";
-	
+
 	public static final String examNotFound = "EXAM NOT FOUND";
-	
+
 	public static final String examFound = "EXAM FOUND SUCCESSFULLY";
-	
+
 	public static final String studentIsNull = "STUDENT IS NULL";
-	
+
 	public static final String examIdIsNull = "STUDENT IS NULL";
-	
+
 	public static final String studentNotFound = "STUDENT NOT FOUND";
-	
+
 	public static final String assignExamSuccess = "EXAM ASSIGN SUCCESSFULLY";
 
 	public static final String studentFound = "STUDENT FOUND SUCCESSFULLY";
@@ -75,13 +75,13 @@ public final class Messages {
 	public static final String quantityIsLess = "PRODUCT QUANTITY IS LESS";
 
 	public static final String examNotComplete = "EXAM NOT COMPLETE. COURSE SWITCH NOT POSSIBLE.";
-	
+
 	public static final String courseAlreadyExists = "COURSE ALREADY ASSIGN";
-	
+
 	public static final String reassignSuccess = "EXAM RE-ASSIGN REQUEST GO TO ADMIN";
 
 	public static final String reassignFailed = "RE-ASSIGN FAILED";
-	
+
 	public static final String notAssignExam = "NOT ANY EXAM ASSIGN THIS REQUEST";
 
 	public static final String course_not_found_franchise = "COURSE NOT PRESENT IN FRANCHISE";
@@ -94,5 +94,8 @@ public final class Messages {
 
 	public static final String failedToSendExam = "FAILED TO SEND EXAM";
 
+	public static final String resultNotFound = "RESULT NOT FOUND";
+
+	public static final String resultFound = "RESULT FOUND SUCCESSFULLY";
 
 }
