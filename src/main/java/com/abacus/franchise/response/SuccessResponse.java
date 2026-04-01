@@ -139,11 +139,11 @@ public class SuccessResponse {
 		this.message = Messages.district_not_found;
 	}
 
-	public void saveUserResponse(String accessToken) {
+	public void saveUserResponse(Object responseData) {
 		this.status = true;
 		this.message = Messages.save_user;
 		this.statusCode = HttpStatus.CREATED;
-		this.response = accessToken;
+		this.response = responseData;
 	}
 
 	public void loginCredentialIsNull() {

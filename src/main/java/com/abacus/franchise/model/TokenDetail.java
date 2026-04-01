@@ -30,10 +30,10 @@ import lombok.Setter;
 @Builder
 public class TokenDetail {
 
-	@Id
-	@UuidGenerator
-	@JdbcTypeCode(SqlTypes.VARCHAR)
-	@Column(name = "token_id", length = 36, updatable = false, nullable = false)
+    @Id
+    @UuidGenerator
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "token_id", length = 36, updatable = false, nullable = false)
     private UUID tokenId;
 
     @JdbcTypeCode(SqlTypes.VARCHAR)
@@ -42,6 +42,12 @@ public class TokenDetail {
 
     @Column(name = "access_token_hash", nullable = false)
     private String accessTokenHash;
+
+    @Column(name = "refresh_token_hash")
+    private String refreshTokenHash;
+
+    @Column(name = "refresh_token_expiry")
+    private LocalDateTime refreshTokenExpiry;
 
     @Builder.Default
     @Column(name = "is_active")

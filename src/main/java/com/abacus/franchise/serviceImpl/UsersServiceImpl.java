@@ -1,5 +1,6 @@
 package com.abacus.franchise.serviceImpl;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,7 @@ import com.abacus.franchise.dto.ExamDetailProjection;
 import com.abacus.franchise.dto.ExamResultDTO;
 import com.abacus.franchise.dto.KitRequestAddressDTO;
 import com.abacus.franchise.dto.KitRequestsDetail;
+import com.abacus.franchise.dto.LoginResponse;
 import com.abacus.franchise.dto.ProductDetail;
 import com.abacus.franchise.dto.ProductRequestDetail;
 import com.abacus.franchise.dto.QuestionDTO;
@@ -323,12 +326,19 @@ public class UsersServiceImpl implements UsersService {
 				roleName,
 				savedUser.getUserId());
 
+		String refreshToken = jwtUtil.generateRefreshToken(
+				savedUser.getMobile(),
+				roleName,
+				savedUser.getUserId());
+
 		TokenDetail token = new TokenDetail();
 		token.setUserId(savedUser.getUserId());
 		token.setAccessTokenHash(accessToken);
+		token.setRefreshTokenHash(refreshToken);
+		token.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
 		tokenDetailRepo.save(token);
 
-		response.saveUserResponse(accessToken);
+		response.saveUserResponse("User created successfully");
 		return response;
 	}
 
@@ -344,27 +354,140 @@ public class UsersServiceImpl implements UsersService {
 			return response;
 		}
 
-		CredentialDetail user = usersRepository.checkMobileNoIsPresentOrNot(authRequest.getUsername(),
+		CredentialDetail credential = usersRepository.checkMobileNoIsPresentOrNot(authRequest.getUsername(),
 				authRequest.getRolename(), authRequest.getUserId().toString());
 
+		if (credential == null) {
+			response.usernameIncorrect();
+			return response;
+		}
+
+		if (!credential.getIsActive()) {
+			response.userIsDeactivate();
+			return response;
+		}
+
+		if (!passwordEncoder.matches(authRequest.getPassword(), credential.getPasswordHash())) {
+			response.wrongPassword();
+			return response;
+		}
+
+		// Get full user details for token generation
+		Users user = usersRepository.findById(authRequest.getUserId()).orElse(null);
 		if (user == null) {
 			response.usernameIncorrect();
 			return response;
 		}
 
-		if (!user.getIsActive()) {
-			response.userIsDeactivate();
-			return response;
-		}
+		// Generate new JWT tokens for login
+		String accessToken = jwtUtil.generateAccessToken(
+				user.getMobile(),
+				authRequest.getRolename(),
+				user.getUserId());
 
-		if (!passwordEncoder.matches(authRequest.getPassword(), user.getPasswordHash())) {
-			response.wrongPassword();
-			return response;
-		}
+		String refreshToken = jwtUtil.generateRefreshToken(
+				user.getMobile(),
+				authRequest.getRolename(),
+				user.getUserId());
 
-		response.loginSuccessfully(null);
+		// Update or create token in database
+		TokenDetail tokenDetail = tokenDetailRepo.findByUserId(user.getUserId())
+				.orElse(new TokenDetail());
+		tokenDetail.setUserId(user.getUserId());
+		tokenDetail.setAccessTokenHash(accessToken);
+		tokenDetail.setRefreshTokenHash(refreshToken);
+		tokenDetail.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
+		tokenDetail.setIsActive(true);
+		tokenDetailRepo.save(tokenDetail);
+
+		LoginResponse loginResponse = LoginResponse.builder()
+				.accessToken(accessToken)
+				.refreshToken(refreshToken)
+				.expiresIn(86400) // 24 hours in seconds
+				.build();
+
+		response.loginSuccessfully(loginResponse);
 
 		return response;
+	}
+
+	@Override
+	public SuccessResponse logoutUsers(UUID userId) {
+		SuccessResponse response = new SuccessResponse();
+
+		try {
+			// Invalidate tokens by deactivating them
+			TokenDetail tokenDetail = tokenDetailRepo.findByUserId(userId).orElse(null);
+			if (tokenDetail != null) {
+				tokenDetail.setIsActive(false);
+				tokenDetailRepo.save(tokenDetail);
+			}
+
+			response.setStatus(true);
+			response.setStatusCode(HttpStatus.OK);
+			response.setMessage("Logged out successfully");
+		} catch (Exception e) {
+			response.setStatus(false);
+			response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+			response.setMessage("Logout failed: " + e.getMessage());
+		}
+
+		return response;
+	}
+
+	@Override
+	public SuccessResponse refreshToken(String refreshToken) {
+		SuccessResponse response = new SuccessResponse();
+
+		try {
+			// Validate refresh token
+			UUID userId = jwtUtil.getUserIdFromRefreshToken(refreshToken);
+
+			// Check if token exists in database and is active
+			TokenDetail tokenDetail = tokenDetailRepo.findByUserId(userId).orElse(null);
+			if (tokenDetail == null || !tokenDetail.getIsActive() ||
+					!refreshToken.equals(tokenDetail.getRefreshTokenHash()) ||
+					tokenDetail.getRefreshTokenExpiry().isBefore(LocalDateTime.now())) {
+				response.setStatus(false);
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				response.setMessage("Invalid or expired refresh token");
+				return response;
+			}
+
+			// Get user details
+			Users user = usersRepository.findById(userId).orElse(null);
+			if (user == null || !user.getIsActive()) {
+				response.setStatus(false);
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
+				response.setMessage("User not found or inactive");
+				return response;
+			}
+
+			// Generate new access token
+			String newAccessToken = jwtUtil.generateAccessToken(
+					user.getMobile(),
+					jwtUtil.getRoleFromRefreshToken(refreshToken),
+					userId);
+
+			// Update access token in database
+			tokenDetail.setAccessTokenHash(newAccessToken);
+			tokenDetailRepo.save(tokenDetail);
+
+			LoginResponse loginResponse = LoginResponse.builder()
+					.accessToken(newAccessToken)
+					.refreshToken(refreshToken)
+					.expiresIn(86400)
+					.build();
+
+			response.loginSuccessfully(loginResponse);
+			return response;
+
+		} catch (Exception e) {
+			response.setStatus(false);
+			response.setStatusCode(HttpStatus.UNAUTHORIZED);
+			response.setMessage("Invalid refresh token");
+			return response;
+		}
 	}
 
 	@Override

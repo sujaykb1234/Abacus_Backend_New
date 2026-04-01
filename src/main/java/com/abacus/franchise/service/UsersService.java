@@ -21,60 +21,64 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface UsersService {
 
-    public SuccessResponse saveOrUpdateUsers(UserViewModel userViewModel, MultipartFile profileImage,
-            MultipartFile documentImage, HttpServletRequest request);
+        public SuccessResponse saveOrUpdateUsers(UserViewModel userViewModel, MultipartFile profileImage,
+                        MultipartFile documentImage, HttpServletRequest request);
 
-    public SuccessResponse loginUsers(AuthRequest authRequest);
+        public SuccessResponse loginUsers(AuthRequest authRequest);
 
-    public SuccessResponse getUsersById(UUID userId, String roleName);
+        public SuccessResponse logoutUsers(UUID userId);
 
-    // Franchise
-    public SuccessResponse getStudentByFranchiseId(UUID franchiseId);
+        public SuccessResponse refreshToken(String refreshToken);
 
-    public SuccessResponse getAllCoursesByFranchiseId(UUID franchiseId);
+        public SuccessResponse getUsersById(UUID userId, String roleName);
 
-    public SuccessResponse sendCourseKitRequest(KitRequest kitRequest);
+        // Franchise
+        public SuccessResponse getStudentByFranchiseId(UUID franchiseId);
 
-    public SuccessResponse getAllProductDetail();
+        public SuccessResponse getAllCoursesByFranchiseId(UUID franchiseId);
 
-    public SuccessResponse sendProductRequest(UUID franchiseId, List<ViewProductRequest> productRequests);
+        public SuccessResponse sendCourseKitRequest(KitRequest kitRequest);
 
-    public SuccessResponse getAllExamDetailByCourseId(String courseId);
+        public SuccessResponse getAllProductDetail();
 
-    public SuccessResponse studentAssignExam(AssignExamRequst assignExamRequst);
+        public SuccessResponse sendProductRequest(UUID franchiseId, List<ViewProductRequest> productRequests);
 
-    public SuccessResponse getFinalPaperByCourseId(String courseId);
+        public SuccessResponse getAllExamDetailByCourseId(String courseId);
 
-    public SuccessResponse getPracticePaperByCourseId(String courseId);
+        public SuccessResponse studentAssignExam(AssignExamRequst assignExamRequst);
 
-    public SuccessResponse getAllOfflineExamStudentsByCourseId(String courseId, String franchiseId);
+        public SuccessResponse getFinalPaperByCourseId(String courseId);
 
-    public SuccessResponse getAllOnlineExamResultStudentsByCourseId(String courseId, String franchiseId);
+        public SuccessResponse getPracticePaperByCourseId(String courseId);
 
-    public SuccessResponse getAllCompleteCoursesStudentByFranchiseId(String franchiseId);
+        public SuccessResponse getAllOfflineExamStudentsByCourseId(String courseId, String franchiseId);
 
-    public SuccessResponse changeCoursesByStudentOrFranchiseId(SwitchCourseRequest courseRequest);
+        public SuccessResponse getAllOnlineExamResultStudentsByCourseId(String courseId, String franchiseId);
 
-    public SuccessResponse getAllProductRequest(String franchiseId);
+        public SuccessResponse getAllCompleteCoursesStudentByFranchiseId(String franchiseId);
 
-    public SuccessResponse getAllKitRequest(String franchiseId);
+        public SuccessResponse changeCoursesByStudentOrFranchiseId(SwitchCourseRequest courseRequest);
 
-    public SuccessResponse getAllUnAssignStudentByExamId(String examId);
+        public SuccessResponse getAllProductRequest(String franchiseId);
 
-    public SuccessResponse requestToReAssignExam(AssignExamRequst assignExamRequst);
+        public SuccessResponse getAllKitRequest(String franchiseId);
 
-    // Student
+        public SuccessResponse getAllUnAssignStudentByExamId(String examId);
 
-    public SuccessResponse getAllCourseExamByStudent(String studentId);
+        public SuccessResponse requestToReAssignExam(AssignExamRequst assignExamRequst);
 
-    public SuccessResponse getAllQuestionByStudent(String studentId);
+        // Student
 
-    public SuccessResponse submitExam(SubmitExamRequest examRequest);
+        public SuccessResponse getAllCourseExamByStudent(String studentId);
 
-    public SuccessResponse getExamResultByStudentAndExamId(UUID studentId,
-            UUID assignExamId,
-            ExamType examType);
+        public SuccessResponse getAllQuestionByStudent(String studentId);
 
-    public SuccessResponse getPracticeRandomQuestions(UUID courseId, int limit);
+        public SuccessResponse submitExam(SubmitExamRequest examRequest);
+
+        public SuccessResponse getExamResultByStudentAndExamId(UUID studentId,
+                        UUID assignExamId,
+                        ExamType examType);
+
+        public SuccessResponse getPracticeRandomQuestions(UUID courseId, int limit);
 
 }

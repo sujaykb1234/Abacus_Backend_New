@@ -15,7 +15,7 @@ public class UserViewModel {
     private String email;
 
     private String mobile;
-
+ 
     private String passwordHash;
 
     private String firstName;
