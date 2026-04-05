@@ -10,7 +10,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.abacus.franchise.model.Course;
+import com.abacus.franchise.repo.CourseRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,12 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.abacus.franchise.dto.BasicUserDetail;
 import com.abacus.franchise.dto.CourseDetail;
+import com.abacus.franchise.dto.CourseDTO;
 import com.abacus.franchise.dto.CourseKitDTO;
 import com.abacus.franchise.dto.CredentialDetail;
 import com.abacus.franchise.dto.ExamAttemptSummaryDTO;
 import com.abacus.franchise.dto.ExamDetail;
 import com.abacus.franchise.dto.ExamDetailProjection;
 import com.abacus.franchise.dto.ExamResultDTO;
+import com.abacus.franchise.dto.FranchiseProjection;
 import com.abacus.franchise.dto.KitRequestAddressDTO;
 import com.abacus.franchise.dto.KitRequestsDetail;
 import com.abacus.franchise.dto.LoginResponse;
@@ -36,6 +44,7 @@ import com.abacus.franchise.dto.StudentCourseExamProjection;
 import com.abacus.franchise.dto.StudentDetails;
 import com.abacus.franchise.dto.UserAddressDetail;
 import com.abacus.franchise.dto.UserDetail;
+import com.abacus.franchise.dto.UserRoleProjection;
 import com.abacus.franchise.enums.ExamMode;
 import com.abacus.franchise.enums.ExamStatus;
 import com.abacus.franchise.enums.ExamType;
@@ -44,6 +53,7 @@ import com.abacus.franchise.exception.ResourceNotFoundException;
 import com.abacus.franchise.model.Address;
 import com.abacus.franchise.model.AssignExam;
 import com.abacus.franchise.model.AssignExamStudent;
+import com.abacus.franchise.model.FranchiseCourse;
 import com.abacus.franchise.model.KitOrderItem;
 import com.abacus.franchise.model.KitRequests;
 import com.abacus.franchise.model.ProductRequest;
@@ -75,6 +85,7 @@ import com.abacus.franchise.service.UsersService;
 import com.abacus.franchise.utility.ImageStoreProcess;
 import com.abacus.franchise.viewModels.AssignExamRequst;
 import com.abacus.franchise.viewModels.AuthRequest;
+import com.abacus.franchise.viewModels.FranchiseRequest;
 import com.abacus.franchise.viewModels.KitRequest;
 import com.abacus.franchise.viewModels.QuestionsAnswerRequest;
 import com.abacus.franchise.viewModels.SubmitExamRequest;
@@ -319,24 +330,24 @@ public class UsersServiceImpl implements UsersService {
 
 		addressRepository.save(address);
 
-		/* ================= JWT ================= */
+		// /* ================= JWT ================= */
 
-		String accessToken = jwtUtil.generateAccessToken(
-				savedUser.getMobile(),
-				roleName,
-				savedUser.getUserId());
+		// String accessToken = jwtUtil.generateAccessToken(
+		// savedUser.getMobile(),
+		// roleName,
+		// savedUser.getUserId());
 
-		String refreshToken = jwtUtil.generateRefreshToken(
-				savedUser.getMobile(),
-				roleName,
-				savedUser.getUserId());
+		// String refreshToken = jwtUtil.generateRefreshToken(
+		// savedUser.getMobile(),
+		// roleName,
+		// savedUser.getUserId());
 
-		TokenDetail token = new TokenDetail();
-		token.setUserId(savedUser.getUserId());
-		token.setAccessTokenHash(accessToken);
-		token.setRefreshTokenHash(refreshToken);
-		token.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
-		tokenDetailRepo.save(token);
+		// TokenDetail token = new TokenDetail();
+		// token.setUserId(savedUser.getUserId());
+		// token.setAccessTokenHash(accessToken);
+		// token.setRefreshTokenHash(refreshToken);
+		// token.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
+		// tokenDetailRepo.save(token);
 
 		response.saveUserResponse("User created successfully");
 		return response;
@@ -354,8 +365,7 @@ public class UsersServiceImpl implements UsersService {
 			return response;
 		}
 
-		CredentialDetail credential = usersRepository.checkMobileNoIsPresentOrNot(authRequest.getUsername(),
-				authRequest.getRolename(), authRequest.getUserId().toString());
+		CredentialDetail credential = usersRepository.checkMobileNoIsPresentOrNot(authRequest.getUsername());
 
 		if (credential == null) {
 			response.usernameIncorrect();
@@ -373,27 +383,28 @@ public class UsersServiceImpl implements UsersService {
 		}
 
 		// Get full user details for token generation
-		Users user = usersRepository.findById(authRequest.getUserId()).orElse(null);
-		if (user == null) {
+		UserRoleProjection userRole = usersRepository.findUserRoleByMobile(authRequest.getUsername()).orElse(null);
+
+		if (userRole == null) {
 			response.usernameIncorrect();
 			return response;
 		}
 
 		// Generate new JWT tokens for login
 		String accessToken = jwtUtil.generateAccessToken(
-				user.getMobile(),
-				authRequest.getRolename(),
-				user.getUserId());
+				authRequest.getUsername(),
+				userRole.getRoleName(),
+				userRole.getUserId());
 
 		String refreshToken = jwtUtil.generateRefreshToken(
-				user.getMobile(),
+				authRequest.getUsername(),
 				authRequest.getRolename(),
-				user.getUserId());
+				userRole.getUserId());
 
 		// Update or create token in database
-		TokenDetail tokenDetail = tokenDetailRepo.findByUserId(user.getUserId())
+		TokenDetail tokenDetail = tokenDetailRepo.findByUserId(userRole.getUserId())
 				.orElse(new TokenDetail());
-		tokenDetail.setUserId(user.getUserId());
+		tokenDetail.setUserId(userRole.getUserId());
 		tokenDetail.setAccessTokenHash(accessToken);
 		tokenDetail.setRefreshTokenHash(refreshToken);
 		tokenDetail.setRefreshTokenExpiry(LocalDateTime.now().plusDays(7));
@@ -1282,6 +1293,157 @@ public class UsersServiceImpl implements UsersService {
 			return response;
 		}
 		response.questionFound(practiceQuestion);
+		return response;
+	}
+
+	@Override
+	public SuccessResponse getAllFranchises(FranchiseRequest franchiseRequest) {
+		SuccessResponse response = new SuccessResponse();
+
+		String mobilePattern = (franchiseRequest.getMobile() != null && !franchiseRequest.getMobile().isEmpty())
+				? franchiseRequest.getMobile() + "%"
+				: null;
+
+		Pageable pageable = PageRequest.of(franchiseRequest.getPage(), franchiseRequest.getSize());
+
+		Page<FranchiseProjection> franchisePage = usersRepository.getAllFranchises(
+				franchiseRequest.getFranchiseId(), mobilePattern, franchiseRequest.getFromDate(),
+				franchiseRequest.getToDate(), pageable);
+
+		if (franchisePage == null || franchisePage.isEmpty()) {
+			response.franchiesnotfound();
+			return response;
+		}
+
+		response.franchiesFound(franchisePage);
+		return response;
+	}
+
+	@Override
+	public SuccessResponse assignCourseToFranchise(String franchiseId, String courseId, UUID createdBy) {
+		SuccessResponse response = new SuccessResponse();
+
+		String existingCourseId = franchiseCourseRepository.checkCourseExistOrNotInFranchise(courseId, franchiseId);
+
+		if (existingCourseId != null) {
+			response.courseAlreadyAssigned();
+			return response;
+		}
+
+		FranchiseCourse franchiseCourse = FranchiseCourse.builder()
+				.franchiseId(UUID.fromString(franchiseId))
+				.courseId(UUID.fromString(courseId))
+				.assignDate(LocalDateTime.now())
+				.createdBy(createdBy)
+				.coursesStatus(true)
+				.build();
+
+		franchiseCourseRepository.save(franchiseCourse);
+
+		response.courseAssignSuccess();
+		return response;
+	}
+
+	@Override
+	public SuccessResponse updateUserRole(String franchiseId, String roleId, UUID updatedBy) {
+		SuccessResponse response = new SuccessResponse();
+
+		Users user = usersRepository.findById(UUID.fromString(franchiseId)).orElse(null);
+		if (user == null || !user.getIsActive()) {
+			response.userNotFound();
+			return response;
+		}
+
+		String roleName = rolesRepository.checkRoleIdPresentOrNot(roleId);
+		if (roleName == null) {
+			response.roleNotFound();
+			return response;
+		}
+
+		user.setRoleId(UUID.fromString(roleId));
+		user.setUpdatedBy(updatedBy);
+		user.setUpdatedAt(LocalDateTime.now());
+		usersRepository.save(user);
+
+		response.roleUpdatedSuccess();
+		return response;
+	}
+
+	@Override
+	public SuccessResponse getAllActiveCourses() {
+		SuccessResponse response = new SuccessResponse();
+		List<Course> courses = courseRepository.findByIsActiveTrue();
+		if (courses == null || courses.isEmpty()) {
+			response.courseNotFound(null);
+			return response;
+		}
+		List<CourseDTO> courseDTOs = courses.stream()
+				.map(course -> CourseDTO.builder()
+						.courseId(course.getCourseId().toString())
+						.courseName(course.getCourseName())
+						.courseType(course.getCourseType())
+						.durationDays(course.getDurationDays())
+						.noOfBooks(course.getNoOfBooks())
+						.build())
+				.toList();
+		response.courseFound(courseDTOs);
+		return response;
+	}
+
+	@Override
+	public SuccessResponse saveOrUpdateCourse(CourseDTO courseDTO) {
+		SuccessResponse response = new SuccessResponse();
+
+		if (courseDTO.getCourseId() != null && !courseDTO.getCourseId().isEmpty()) {
+			Course existingCourse = courseRepository.findById(UUID.fromString(courseDTO.getCourseId()))
+					.orElse(null);
+			if (existingCourse == null) {
+				response.courseNotFound(null);
+				return response;
+			}
+			if (!existingCourse.getIsActive()) {
+				response.courseNotFound(null);
+				return response;
+			}
+			existingCourse.setCourseName(courseDTO.getCourseName());
+			existingCourse.setCourseType(courseDTO.getCourseType());
+			existingCourse.setDurationDays(courseDTO.getDurationDays());
+			existingCourse.setNoOfBooks(courseDTO.getNoOfBooks());
+			existingCourse.setUpdatedBy(courseDTO.getUserId());
+			courseRepository.save(existingCourse);
+			response.courseUpdatedSuccess(existingCourse.getCourseId().toString());
+			return response;
+		} else {
+			Course course = Course.builder()
+					.courseName(courseDTO.getCourseName())
+					.courseType(courseDTO.getCourseType())
+					.durationDays(courseDTO.getDurationDays())
+					.noOfBooks(courseDTO.getNoOfBooks())
+					.isActive(true)
+					.createdBy(courseDTO.getUserId())
+					.build();
+			courseRepository.save(course);
+			response.courseSavedSuccess(course.getCourseId().toString());
+			return response;
+		}
+	}
+
+	@Override
+	public SuccessResponse deleteCourse(String courseId) {
+		SuccessResponse response = new SuccessResponse();
+		Course course = courseRepository.findById(UUID.fromString(courseId))
+				.orElse(null);
+		if (course == null) {
+			response.courseNotFound(courseId);
+			return response;
+		}
+		if (!course.getIsActive()) {
+			response.courseNotFound(null);
+			return response;
+		}
+		course.setIsActive(false);
+		courseRepository.save(course);
+		response.courseDeletedSuccess();
 		return response;
 	}
 }

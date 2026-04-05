@@ -12,6 +12,7 @@ import com.abacus.franchise.model.FranchiseCourse;
 @Repository
 public interface FranchiseCourseRepository extends JpaRepository<FranchiseCourse, UUID> {
 
-	@Query(value = "SELECT franchise_course_id FROM franchise_course WHERE course_id = :courseId  AND franchise_id = :franchiseId AND courses_status = 1",nativeQuery = true)
-	UUID checkCourseExistOrNotInFranchise(@Param("courseId") String courseId,@Param("franchiseId") String franchiseId);
+	@Query(value = "SELECT franchise_course_id FROM franchise_course WHERE course_id = :courseId  AND franchise_id = :franchiseId AND courses_status = 1", nativeQuery = true)
+	String checkCourseExistOrNotInFranchise(@Param("courseId") String courseId,
+			@Param("franchiseId") String franchiseId);
 }

@@ -36,11 +36,14 @@ public class SecurityConfig {
 
 	        .authorizeHttpRequests(auth -> auth
 	                .requestMatchers("/abacus/v1/auth/**").permitAll()
-	                .requestMatchers("/abacus/v1/users/**").permitAll()
-	                .requestMatchers("/abacus/v1/franchise/**")
+                    .requestMatchers( "/swagger-ui/**",
+	                        "/v3/api-docs/**","/swagger-ui.html").permitAll()				
+					.requestMatchers("/abacus/v1/franchise/**")
 	                .hasAnyRole("FRANCHISE", "MASTER_FRANCHISE")
 	                .requestMatchers("/abacus/v1/student/**")
 	                .hasAnyRole("STUDENT")
+					.requestMatchers("/abacus/v1/admin/**")	
+					.hasRole("ADMIN")
 	                .anyRequest().authenticated()
 	        )
 

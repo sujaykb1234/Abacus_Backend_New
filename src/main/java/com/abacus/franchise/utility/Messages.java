@@ -30,6 +30,8 @@ public final class Messages {
 
 	public static final String franchiesNotFound = "FRANCHIES NOT FOUND";
 
+	public static final String franchiesFound = "FRANCHIES FOUND SUCCESSFULLY";
+
 	public static final String kitSendSuccessfully = "SEND COURSES KITS SUCCESSFULLY";
 
 	public static final String addressIsNull = "ADDRESS IS NULL";
@@ -97,5 +99,25 @@ public final class Messages {
 	public static final String resultNotFound = "RESULT NOT FOUND";
 
 	public static final String resultFound = "RESULT FOUND SUCCESSFULLY";
+
+	public static final String courseAssignSuccess = "COURSE ASSIGN SUCCESSFULLY";
+
+	public static final String courseAlreadyAssigned = "COURSE ALREADY ASSIGNED TO FRANCHISE";
+
+	public static final String roleNotFound = "ROLE NOT FOUND";
+
+	public static final String roleUpdatedSuccess = "ROLE UPDATED SUCCESSFULLY";
+
+	public static final String courseSavedSuccess = "COURSE SAVED SUCCESSFULLY";
+
+	public static final String courseUpdatedSuccess = "COURSE UPDATED SUCCESSFULLY";
+
+	public static final String courseDeletedSuccess = "COURSE DELETED SUCCESSFULLY";
+
+	public static final String courseAlreadyExist = "COURSE ALREADY EXISTS";
+
+	public static final String coursesFound = "COURSES FOUND SUCCESSFULLY";
+
+	public static final String noCourseFound = "NO COURSES FOUND";
 
 }
