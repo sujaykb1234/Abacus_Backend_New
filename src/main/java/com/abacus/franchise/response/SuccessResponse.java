@@ -41,6 +41,13 @@ public class SuccessResponse {
 		this.message = Messages.franchiesNotFound;
 	}
 
+	public void franchiesFound(Object object) {
+		this.response = object;
+		this.status = true;
+		this.statusCode = HttpStatus.FOUND;
+		this.message = Messages.franchiesFound;
+	}
+
 	public void courseNotFound(String courseId) {
 		this.response = null;
 		this.status = false;
@@ -349,4 +356,61 @@ public class SuccessResponse {
 		this.message = Messages.resultFound;
 		this.response = object;
 	}
+
+	public void courseAssignSuccess() {
+		this.response = null;
+		this.status = true;
+		this.statusCode = HttpStatus.OK;
+		this.message = Messages.courseAssignSuccess;
+	}
+
+	public void courseAlreadyAssigned() {
+		this.status = false;
+		this.statusCode = HttpStatus.BAD_REQUEST;
+		this.message = Messages.courseAlreadyAssigned;
+		this.response = null;
+	}
+
+	public void roleNotFound() {
+		this.status = false;
+		this.statusCode = HttpStatus.NOT_FOUND;
+		this.message = Messages.roleNotFound;
+		this.response = null;
+	}
+
+	public void roleUpdatedSuccess() {
+		this.response = null;
+		this.status = true;
+		this.statusCode = HttpStatus.OK;
+		this.message = Messages.roleUpdatedSuccess;
+	}
+
+	public void courseSavedSuccess(Object object) {
+		this.response = object;
+		this.status = true;
+		this.statusCode = HttpStatus.CREATED;
+		this.message = Messages.courseSavedSuccess;
+	}
+
+	public void courseUpdatedSuccess(Object object) {
+		this.response = object;
+		this.status = true;
+		this.statusCode = HttpStatus.OK;
+		this.message = Messages.courseUpdatedSuccess;
+	}
+
+	public void courseDeletedSuccess() {
+		this.response = null;
+		this.status = true;
+		this.statusCode = HttpStatus.OK;
+		this.message = Messages.courseDeletedSuccess;
+	}
+
+	public void courseAlreadyExist() {
+		this.response = null;
+		this.status = false;
+		this.statusCode = HttpStatus.BAD_REQUEST;
+		this.message = Messages.courseAlreadyExist;
+	}
+
 }

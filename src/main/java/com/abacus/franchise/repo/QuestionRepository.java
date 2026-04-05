@@ -51,4 +51,5 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
 	List<QuestionProjection> getRandomQuestions(
 			@Param("courseId") String courseId,
 			@Param("limit") int limit);
+
 }

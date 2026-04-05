@@ -5,11 +5,13 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.abacus.franchise.dto.ExamAttemptSummaryDTO;
+import com.abacus.franchise.dto.CourseDTO;
 import com.abacus.franchise.dto.QuestionProjection;
 import com.abacus.franchise.enums.ExamType;
 import com.abacus.franchise.response.SuccessResponse;
 import com.abacus.franchise.viewModels.AssignExamRequst;
 import com.abacus.franchise.viewModels.AuthRequest;
+import com.abacus.franchise.viewModels.FranchiseRequest;
 import com.abacus.franchise.viewModels.KitRequest;
 import com.abacus.franchise.viewModels.QuestionsAnswerRequest;
 import com.abacus.franchise.viewModels.SubmitExamRequest;
@@ -80,5 +82,19 @@ public interface UsersService {
                         ExamType examType);
 
         public SuccessResponse getPracticeRandomQuestions(UUID courseId, int limit);
+
+        // Admin
+
+        public SuccessResponse getAllFranchises(FranchiseRequest franchiseRequest);
+
+        public SuccessResponse assignCourseToFranchise(String franchiseId, String courseId, UUID createdBy);
+
+        public SuccessResponse updateUserRole(String franchiseId, String roleId, UUID updatedBy);
+
+        public SuccessResponse getAllActiveCourses();
+
+        public SuccessResponse saveOrUpdateCourse(CourseDTO courseDTO);
+
+        public SuccessResponse deleteCourse(String courseId);
 
 }

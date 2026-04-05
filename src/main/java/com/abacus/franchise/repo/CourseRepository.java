@@ -54,6 +54,8 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 	@Query(value="SELECT course_id FROM course WHERE course_id = :courseId AND is_active = true",nativeQuery = true)
 	UUID checkCourseIdIsExistOrNot(@Param("courseId") String courseId);
 	
+	List<Course> findByIsActiveTrue();
+	
     @Query(value="""
       SELECT 
 		    c.course_id,

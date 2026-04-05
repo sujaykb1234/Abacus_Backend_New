@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.abacus.franchise.enums.ExamType;
 import com.abacus.franchise.response.SuccessResponse;
 import com.abacus.franchise.service.UsersService;
-import com.abacus.franchise.viewModels.AuthRequest;
 import com.abacus.franchise.viewModels.SubmitExamRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,22 +27,6 @@ public class StudentController {
 
 	@Autowired
 	UsersService usersService;
-
-	@PostMapping("login")
-	public ResponseEntity<SuccessResponse> loginUsers(@RequestBody AuthRequest authRequest,
-			HttpServletRequest request) {
-
-		UUID userId = (UUID) request.getAttribute("userId");
-		String role = (String) request.getAttribute("role");
-
-		authRequest.setRolename(role);
-		authRequest.setUserId(userId);
-
-		SuccessResponse response = usersService.loginUsers(authRequest);
-		return ResponseEntity
-				.status(response.getStatusCode())
-				.body(response);
-	}
 
 	@GetMapping("getStudentById")
 	public ResponseEntity<SuccessResponse> getUsersById(HttpServletRequest request) {
