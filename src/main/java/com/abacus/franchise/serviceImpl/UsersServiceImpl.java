@@ -295,7 +295,7 @@ public class UsersServiceImpl implements UsersService {
 
 		if (viewUser.getCourseId() != null && viewUser.getFranchiseId() != null) {
 
-			UUID checkCourseIdIsExistOrNot = franchiseCourseRepository.checkCourseExistOrNotInFranchise(
+			String checkCourseIdIsExistOrNot = franchiseCourseRepository.checkCourseExistOrNotInFranchise(
 					viewUser.getCourseId().toString(), viewUser.getFranchiseId().toString());
 
 			if (checkCourseIdIsExistOrNot == null) {
